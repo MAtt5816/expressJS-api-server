@@ -18,7 +18,10 @@ const User = sequelize.define('User', {
     sha256: {
         type: DataTypes.STRING(64),
         allowNull: false,
-    }
+    },
+}, {
+    tableName: "users",
+    timestamps: false
 });
 
 module.exports = User;

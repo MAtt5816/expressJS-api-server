@@ -1,4 +1,5 @@
 const jwtAuth = require('../middleware/jwt-auth')
+const userService = require('../services/users');
 
 exports.hello = async (req, res) => {
     res.status(200).send("Hello World!");
@@ -7,8 +8,9 @@ exports.hello = async (req, res) => {
 exports.authorize = async (req, res) => {
     const { username, passphrase } = req.body;
 
-    // TODO: In a real application, you would validate the user credentials here.
-    if (username && passphrase) {
+    let isCorrectPassword = await userService.checkPassword(username, passphrase);
+
+    if (isCorrectPassword) {
         const token = jwtAuth.signJWT(username, '3h');
         res.status(200).send(token);
     } else {
