@@ -1,90 +1,110 @@
-// TODO: Sample in-memory student data
-let students = [
-    {
-        id: 1,
-        gender: 'female',
-        title: 'Miss',
-        first_name: 'Terri',
-        last_name: 'Lucas',
-        email: 'terri.lucas@example.com',
-        dob: '1964-11-23',
-        registered: '2014-07-23T03:21:42.259Z',
-        phone: '03-2662-3559',
-        id_name: 'TFN',
-        id_value: '230000682',
-        nat: 'AU',
-        location: {
-            street_number: 2595,
-            street_name: 'Main Street',
-            city: 'Tamworth',
-            state: 'Queensland',
-            country: 'Australia',
-            postcode: '6066',
-            timezone: '+5:30'
-        },
-        picture: {
-            large: 'https://randomuser.me/api/portraits/men/75.jpg',
-            medium: 'https://randomuser.me/api/portraits/med/men/75.jpg',
-            thumbnail: 'https://randomuser.me/api/portraits/thumb/men/75.jpg'
-        }
-    }
-];
+const sequelize = require('../config/database');
+const studentService = require('../services/students');
 
 exports.getStudent = async (req, res) => {
     const { results = 1 } = req.query;
     const n = parseInt(results, 10);
 
-    res.status(200).json(students.slice(0, n));
+    let students = await studentService.getStudents(n);
+
+    res.status(200).json(students);
 }
 
 exports.postStudent = async (req, res) => {
     const newStudents = req.body;
 
-    newStudents.forEach((student, index) => {
-        student.id = students.length + index + 1;
-        students.push(student);
-    });
+    let students = []
 
-    res.status(201).json(newStudents);
+    const transact = await sequelize.transaction();
+
+    try {
+        for (const student of newStudents) {
+            let stud = structuredClone(student);
+            stud.registered = Date.now();
+
+            let result = await studentService.createStudent(stud);
+
+            if (result !== null)
+                students.push(stud);
+            else
+                throw new Error("Student not added to database");
+        }
+
+        await transact.commit();
+        res.status(201).json(students);
+    }
+    catch (e) {
+        await transact.rollback()
+        res.sendStatus(400);
+    }
 }
 
 exports.putStudent = async (req, res) => {
     const { studentId } = req.params;
     const updatedStudent = req.body;
 
-    const studentIndex = students.findIndex(student => student.id === parseInt(studentId, 10));
+    let transact = await sequelize.transaction();
 
-    if (studentIndex === -1) {
+    try {
+        let student = await studentService.updateStudent(studentId, updatedStudent);
+        if (student === null) {
+            await transact.rollback();
+            return res.sendStatus(404);
+        }
+        else {
+            await transact.commit();
+            return res.status(200).json(student);
+        }
+    }
+    catch (e) {
+        await transact.rollback();
         return res.sendStatus(404);
     }
-
-    students[studentIndex] = { ...students[studentIndex], ...updatedStudent };
-    res.status(200).json(students[studentIndex]);
 }
 
 exports.patchStudent = async (req, res) => {
     const { studentId } = req.params;
-    const updatedFields = req.body;
+    const updatedStudent = req.body;
 
-    const studentIndex = students.findIndex(student => student.id === parseInt(studentId, 10));
+    let transact = await sequelize.transaction();
 
-    if (studentIndex === -1) {
+    try {
+        let student = await studentService.partiallyUpdateStudent(studentId, updatedStudent);
+        if (student === null) {
+            await transact.rollback();
+            return res.sendStatus(404);
+        }
+        else {
+            await transact.commit();
+            return res.status(200).json(student);
+        }
+    }
+    catch (e) {
+        await transact.rollback();
         return res.sendStatus(404);
     }
-
-    students[studentIndex] = { ...students[studentIndex], ...updatedFields };
-    res.status(200).json(students[studentIndex]);
 }
 
 exports.deleteStudent = async (req, res) => {
     const { studentId } = req.params;
 
-    const studentIndex = students.findIndex(student => student.id === parseInt(studentId, 10));
-
-    if (studentIndex === -1) {
+    try {
+        let student = await studentService.getStudentById(studentId);
+        if (student !== null) {
+            let transact = await sequelize.transaction();
+            if (!(await studentService.deleteStudent(student))) {
+                await transact.rollback();
+                throw new Error("Nothing deleted");
+            }
+            await transact.commit();
+        }
+        else {
+            return res.sendStatus(404);
+        }
+    }
+    catch (e) {
         return res.sendStatus(404);
     }
 
-    students.splice(studentIndex, 1);
-    res.sendStatus(204);
+    return res.sendStatus(204);
 }

@@ -62,7 +62,7 @@ const Student = sequelize.define('Student', {
     timestamps: false, // Disable automatic timestamps if not needed
 });
 
-Student.belongsTo(Location, { foreignKey: 'id', as: 'location' });
-Student.belongsTo(Picture, { foreignKey: 'id', as: 'picture' });
+Student.hasOne(Location, { foreignKey: 'student_id', as: 'location', onDelete: 'CASCADE', onUpdate: 'CASCADE' });
+Student.hasOne(Picture, { foreignKey: 'student_id', as: 'picture', onDelete: 'CASCADE', onUpdate: 'CASCADE' });
 
 module.exports = Student;

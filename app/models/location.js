@@ -4,8 +4,12 @@ const sequelize = require('../config/database');
 const Location = sequelize.define('Location', {
     student_id: {
         type: DataTypes.INTEGER,
-        autoIncrement: false,
         primaryKey: true,
+        allowNull: false,
+        references: {
+            model: 'students',
+            key: 'id',
+        },
     },
     street_number: {
         type: DataTypes.INTEGER,

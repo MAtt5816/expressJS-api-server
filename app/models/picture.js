@@ -4,8 +4,11 @@ const sequelize = require('../config/database');
 const Picture = sequelize.define('Picture', {
     student_id: {
         type: DataTypes.INTEGER,
-        autoIncrement: false,
         primaryKey: true,
+        references: {
+            model: 'students',
+            key: 'id'
+        }
     },
     large: {
         type: DataTypes.STRING(255),
