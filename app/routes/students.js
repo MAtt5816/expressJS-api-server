@@ -27,7 +27,7 @@ router.post(
         body('*.email').isEmail().isLength({ max: 100 }),
         body('*.dob').isDate(),
         body('*.phone').isString().isLength({ max: 20 }),
-        // Add more validation rules as needed
+        // TODO: Add more validation rules as needed
     ],
     handleValidationErrors,
     controller.postStudent
@@ -46,7 +46,7 @@ router.put(
         body('email').optional().isEmail().isLength({ max: 100 }),
         body('dob').optional().isDate(),
         body('phone').optional().isString().isLength({ max: 20 }),
-        // Add more validation rules as needed
+        // TODO: Add more validation rules as needed
     ],
     handleValidationErrors,
     controller.putStudent
@@ -65,7 +65,7 @@ router.patch(
         body('email').optional().isEmail().isLength({ max: 100 }),
         body('dob').optional().isDate(),
         body('phone').optional().isString().isLength({ max: 20 }),
-        // Add more validation rules as needed
+        // TODO: Add more validation rules as needed
     ],
     handleValidationErrors,
     controller.patchStudent
