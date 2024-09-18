@@ -1,7 +1,7 @@
 const { Op } = require('sequelize');
-const Student = require('../models/Student');
-const Location = require('../models/Location');
-const Picture = require('../models/Picture');
+const Student = require('../models/student');
+const Location = require('../models/location');
+const Picture = require('../models/picture');
 
 /**
  * Get a list of students, optionally limited by a number of results.
