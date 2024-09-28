@@ -1,4 +1,8 @@
 FROM node:20
+COPY wait-for-db-start.sh /usr/local/bin/wait-for-db-start.sh
+RUN chmod +x /usr/local/bin/wait-for-db-start.sh
+
+RUN apt update && apt install -y mariadb-client
 
 WORKDIR /app
 
@@ -12,4 +16,4 @@ COPY . .
 
 EXPOSE 3000
 
-CMD ["npm", "start"]
+CMD ["sh", "-c", "wait-for-db-start.sh -- npm start"]
